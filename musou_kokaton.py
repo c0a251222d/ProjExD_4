@@ -73,6 +73,9 @@ class Bird(pg.sprite.Sprite):
         self.rect.center = xy
         self.speed = 10
 
+        self.state = "normal"
+        self.hyper_life = 0
+
     def change_img(self, num: int, screen: pg.Surface):
         """
         こうかとん画像を切り替え，画面に転送する
@@ -99,8 +102,17 @@ class Bird(pg.sprite.Sprite):
         if not (sum_mv[0] == 0 and sum_mv[1] == 0):
             self.dire = tuple(sum_mv)
             self.image = self.imgs[self.dire]
+        """
+         課題４の無敵時間処理
+         無敵時間中はこうかとんの画像をラプラシアンフィルタで加工して表示する
+         無敵時間終了後は通常の画像に戻す
+        """
+        if self.state == "hyper":       #無敵時間終了させるための処理
+            self.hyper_life -= 1
+            self.image = pg.transform.laplacian(self.image)
+            if self.hyper_life <= 0:
+                self.state = "normal"
         screen.blit(self.image, self.rect)
-
 
 class Bomb(pg.sprite.Sprite):
     """
@@ -349,6 +361,7 @@ def main():
     clock = pg.time.Clock()
 
     gravity = pg.sprite.Group()    #課題２　重力場のグループ作成
+
     while True:
         key_lst = pg.key.get_pressed()
         for event in pg.event.get():
@@ -369,8 +382,15 @@ def main():
 
         screen.blit(bg_img, [0, 0])
 
+        if event.type == pg.KEYDOWN and event.key == pg.K_RSHIFT:   #課題４
+                if score.value >= 100:        
+                    bird.state = "hyper"
+                    bird.hyper_life = 500
+                    score.value -= 100
+        screen.blit(bg_img, [0, 0])
+        
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
-            emys.add(Enemy())
+                emys.add(Enemy())
 
         for emy in emys:
             if emy.state == "stop" and tmr%emy.interval == 0:
@@ -388,17 +408,20 @@ def main():
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
             if bomb.state != "inactive":
-                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-                score.update(screen)
-                pg.display.update()
-                life.value -= 1
-                life.update(screen)
-                pg.display.update()
+                if bird.state == "hyper":       #課題４の無敵時間判定のために条件分岐
+                    exps.add(Explosion(bomb, 50))
+                    score.value += 1
+                else:
+                  　bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                    score.update(screen)
+                    life.value -= 1
+                    life.update(screen)
+                    pg.display.update()
             
-                if life.value <= 0:
-                    time.sleep(2)
-                    return
-
+                    if life.value <= 0:
+                        time.sleep(2)
+                        return
+                   
         
         for emy in pg.sprite.groupcollide(emys, gravity, True, False).keys():  # 重力場と敵機の衝突判定
             exps.add(Explosion(emy, 100))  # 爆発エフェクト
@@ -406,6 +429,9 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, gravity, True, False):    #爆弾と重力場の衝突判定
             exps.add(Explosion(bomb, 50))
                 
+     
+        
+       
 
         bird.update(key_lst, screen)
         beams.update()
