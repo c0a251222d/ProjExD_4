@@ -242,6 +242,35 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+class EMP(pg.sprite.Sprite):
+    def __init__(self, emys, bombs, screen, life):
+        super().__init__()
+        self.life = life
+        emp_screen = pg.Surface((WIDTH, HEIGHT))
+        pg.draw.rect(emp_screen, (200, 0, 200), pg.Rect(0, 0, WIDTH, HEIGHT))
+        emp_screen.set_alpha(50)
+        screen.blit(emp_screen, [0, 0])
+
+        for emy in emys:
+            emy.interval = math.inf
+            emy.image = pg.transform.laplacian(emy.image)
+        
+        for bom in bombs:
+            bom.speed /= 2
+            bom.state = "inactive"
+
+        pg.display.update()
+        time.sleep(0.5)  
+
+    def update(self):
+        """
+        
+        """
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -253,6 +282,8 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    emp = pg.sprite.Group()
+    emp_cnt = 0
 
     tmr = 0
     clock = pg.time.Clock()
@@ -263,6 +294,12 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            # EMP
+            if event.type == pg.KEYDOWN and event.key == pg.K_e and score.value >= 20 and len(emp) == 0:
+                score.value -= 20
+                emp.add(EMP(emys, bombs, screen, 1000))
+
+
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -288,6 +325,7 @@ def main():
             pg.display.update()
             time.sleep(2)
             return
+                
 
         bird.update(key_lst, screen)
         beams.update()
@@ -299,9 +337,10 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        emp.update()
         pg.display.update()
         tmr += 1
-        clock.tick(50)
+        clock.tick(50) # 50fps
 
 
 if __name__ == "__main__":
