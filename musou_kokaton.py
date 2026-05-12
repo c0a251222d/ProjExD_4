@@ -243,6 +243,11 @@ class Score:
 
     
 class Gravity(pg.sprite.Sprite):
+    """
+    重力場クラス
+    画面いっぱいに半透明の壁を出し、
+    main内で衝突判定をして敵機を消す
+    """
     def __init__(self, life):
         super().__init__()      #Groupのために継承
 
