@@ -243,11 +243,10 @@ class Score:
 
 
 class EMP(pg.sprite.Sprite):
-    def __init__(self, emys, bombs, screen, life):
+    def __init__(self, emys, bombs, screen):
         super().__init__()
-        self.life = life
         emp_screen = pg.Surface((WIDTH, HEIGHT))
-        pg.draw.rect(emp_screen, (200, 0, 200), pg.Rect(0, 0, WIDTH, HEIGHT))
+        pg.draw.rect(emp_screen, (255, 255, 0), pg.Rect(0, 0, WIDTH, HEIGHT))
         emp_screen.set_alpha(50)
         screen.blit(emp_screen, [0, 0])
 
@@ -262,13 +261,6 @@ class EMP(pg.sprite.Sprite):
         pg.display.update()
         time.sleep(0.5)  
 
-    def update(self):
-        """
-        
-        """
-        self.life -= 1
-        if self.life < 0:
-            self.kill()
 
 
 def main():
@@ -282,8 +274,6 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
-    emp = pg.sprite.Group()
-    emp_cnt = 0
 
     tmr = 0
     clock = pg.time.Clock()
@@ -295,9 +285,9 @@ def main():
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
             # EMP
-            if event.type == pg.KEYDOWN and event.key == pg.K_e and score.value >= 20 and len(emp) == 0:
+            if event.type == pg.KEYDOWN and event.key == pg.K_e and score.value >= 20:
                 score.value -= 20
-                emp.add(EMP(emys, bombs, screen, 1000))
+                EMP(emys, bombs, screen)
 
 
         screen.blit(bg_img, [0, 0])
@@ -337,7 +327,6 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
-        emp.update()
         pg.display.update()
         tmr += 1
         clock.tick(50) # 50fps
