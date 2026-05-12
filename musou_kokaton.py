@@ -259,7 +259,7 @@ class EMP(pg.sprite.Sprite):
             bom.state = "inactive"
 
         pg.display.update()
-        time.sleep(0.5)  
+        time.sleep(0.05)  
 
 
 
@@ -310,11 +310,12 @@ def main():
             score.value += 1  # 1点アップ
 
         for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
-            bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
+            if bomb.state != "inactive":
+                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
                 
 
         bird.update(key_lst, screen)
