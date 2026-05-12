@@ -242,6 +242,54 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+class Life:
+
+    def __init__(self):
+
+        self.value = 3
+
+    def draw_heart(
+        self,
+        screen: pg.Surface,
+        x: int,
+        y: int
+    ):
+
+        points = [
+
+            (
+                16*math.sin(t/100)**3 + x,
+
+                -(
+                    13*math.cos(t/100)
+                    - 5*math.cos(2*t/100)
+                    - 2*math.cos(3*t/100)
+                    - math.cos(4*t/100)
+                ) + y
+
+            )
+
+            for t in range(0, 628)
+
+        ]
+
+        pg.draw.polygon(
+            screen,
+            (255, 0, 0),
+            points
+        )
+
+    def update(self, screen: pg.Surface):
+
+        for i in range(self.value):
+
+            self.draw_heart(
+                screen,
+                950 + i*40,
+                HEIGHT-40
+            )
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -253,6 +301,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    life = Life()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -299,6 +348,7 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        life.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
