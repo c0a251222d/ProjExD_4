@@ -245,7 +245,7 @@ class Score:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
-        self.value = 0
+        self.value = 1000
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
@@ -296,6 +296,54 @@ class EMP(pg.sprite.Sprite):
 
 
 
+class Life:
+
+    def __init__(self):
+
+        self.value = 3
+
+    def draw_heart(
+        self,
+        screen: pg.Surface,
+        x: int,
+        y: int
+    ):
+
+        points = [
+
+            (
+                16*math.sin(t/100)**3 + x,
+
+                -(
+                    13*math.cos(t/100)
+                    - 5*math.cos(2*t/100)
+                    - 2*math.cos(3*t/100)
+                    - math.cos(4*t/100)
+                ) + y
+
+            )
+
+            for t in range(0, 628)
+
+        ]
+
+        pg.draw.polygon(
+            screen,
+            (255, 0, 0),
+            points
+        )
+
+    def update(self, screen: pg.Surface):
+
+        for i in range(self.value):
+
+            self.draw_heart(
+                screen,
+                950 + i*40,
+                HEIGHT-40
+            )
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -307,6 +355,8 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    life = Life()
+
     tmr = 0
     clock = pg.time.Clock()
 
@@ -362,11 +412,16 @@ def main():
                     exps.add(Explosion(bomb, 50))
                     score.value += 1
                 else:
-                    bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                  　bird.change_img(8, screen)  # こうかとん悲しみエフェクト
                     score.update(screen)
+                    life.value -= 1
+                    life.update(screen)
                     pg.display.update()
-                    time.sleep(2)
-                    return
+            
+                    if life.value <= 0:
+                        time.sleep(2)
+                        return
+                   
         
         for emy in pg.sprite.groupcollide(emys, gravity, True, False).keys():  # 重力場と敵機の衝突判定
             exps.add(Explosion(emy, 100))  # 爆発エフェクト
@@ -391,6 +446,7 @@ def main():
 
         gravity.update()      #課題２
         gravity.draw(screen)
+        life.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50) # 50fps
